@@ -1,80 +1,23 @@
 import { useState, useRef, useEffect } from 'react'
+import { 
+  RefreshCw, 
+  Trash2, 
+  Download, 
+  FileJson, 
+  PanelRightClose, 
+  PanelRight,
+  MessageSquare, 
+  Database, 
+  Send,
+  LayoutGrid
+} from 'lucide-react'
 import './App.css'
-
-// Icon components
-const IconRefresh = () => (
-  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-    <path d="M3 3v5h5"/>
-  </svg>
-)
-
-const IconTrash = () => (
-  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6"/>
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-    <line x1="10" y1="11" x2="10" y2="17"/>
-    <line x1="14" y1="11" x2="14" y2="17"/>
-  </svg>
-)
-
-const IconDownload = () => (
-  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-    <polyline points="7 10 12 15 17 10"/>
-    <line x1="12" y1="15" x2="12" y2="3"/>
-  </svg>
-)
-
-const IconCode = () => (
-  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="16 18 22 12 16 6"/>
-    <polyline points="8 6 2 12 8 18"/>
-  </svg>
-)
-
-const IconSidebar = () => (
-  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2"/>
-    <line x1="12" y1="3" x2="12" y2="21"/>
-  </svg>
-)
-
-const IconChat = () => (
-  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-  </svg>
-)
-
-const IconSchema = () => (
-  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="7" height="7" rx="1"/>
-    <rect x="14" y="3" width="7" height="7" rx="1"/>
-    <rect x="3" y="14" width="7" height="7" rx="1"/>
-    <rect x="14" y="14" width="7" height="7" rx="1"/>
-    <path d="M10 6.5h4M6.5 10v4M17.5 10v4M10 17.5h4"/>
-  </svg>
-)
-
-const IconSend = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor">
-    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-  </svg>
-)
-
-const IconDatabase = () => (
-  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <ellipse cx="12" cy="5" rx="9" ry="3"/>
-    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-  </svg>
-)
 
 function App() {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: '👋 Welcome to SchemaForge!\n\nI help you design database schemas through conversation.\n\nTell me what system you want to build:\n• A school management system\n• An e-commerce database\n• A library management system'
+      content: '👋 Welcome to Archetict!\n\nI help you design database schemas through conversation.\n\nTell me what system you want to build:\n• A school management system\n• An e-commerce database\n• A library management system'
     }
   ])
   const [input, setInput] = useState('')
@@ -152,7 +95,7 @@ function App() {
     
     setMessages([{
       role: 'assistant',
-      content: '👋 Welcome to SchemaForge!\n\nI help you design database schemas through conversation.\n\nTell me what system you want to build:\n• A school management system\n• An e-commerce database\n• A library management system'
+      content: '👋 Welcome to Architect!\n\nI help you design database schemas through conversation.\n\nTell me what system you want to build:\n• A school management system\n• An e-commerce database\n• A library management system'
     }])
     setOptions([])
     setDiagramHtml(null)
@@ -193,25 +136,32 @@ function App() {
       <header className="header">
         <div className="logo">
           <div className="logo-icon">
-            <IconDatabase />
+            <Database size={24} color="#ffffff" strokeWidth={2} />
           </div>
-          <span className="logo-text">SchemaForge</span>
+          <span className="logo-text">Architect</span>
         </div>
         <div className="header-actions">
           <button onClick={resetChat} title="Reset All">
-            <IconRefresh />
+            <RefreshCw size={20} color="#a0a0b0" strokeWidth={2} />
           </button>
           <button onClick={clearChat} title="Clear Chat">
-            <IconTrash />
+            <Trash2 size={20} color="#a0a0b0" strokeWidth={2} />
           </button>
           <button onClick={downloadHtml} title="Download HTML" disabled={!diagramHtml}>
-            <IconDownload />
+            <Download size={20} color={diagramHtml ? "#a0a0b0" : "#444"} strokeWidth={2} />
           </button>
           <button onClick={downloadJson} title="Download JSON" disabled={!schemaData}>
-            <IconCode />
+            <FileJson size={20} color={schemaData ? "#a0a0b0" : "#444"} strokeWidth={2} />
           </button>
-          <button onClick={() => setShowDiagram(!showDiagram)} title="Toggle Diagram" className={showDiagram ? 'active' : ''}>
-            <IconSidebar />
+          <button 
+            onClick={() => setShowDiagram(!showDiagram)} 
+            title="Toggle Diagram" 
+            className={showDiagram ? 'active' : ''}
+          >
+            {showDiagram 
+              ? <PanelRightClose size={20} color="#ff6b2c" strokeWidth={2} /> 
+              : <PanelRight size={20} color="#a0a0b0" strokeWidth={2} />
+            }
           </button>
         </div>
       </header>
@@ -222,7 +172,7 @@ function App() {
         <div className="chat-panel">
           <div className="panel-header">
             <div className="icon">
-              <IconChat />
+              <MessageSquare size={18} color="#ff6b2c" strokeWidth={2} />
             </div>
             <span>Chat</span>
           </div>
@@ -276,7 +226,7 @@ function App() {
               disabled={isLoading}
             />
             <button onClick={() => sendMessage(input)} disabled={isLoading || !input.trim()} className="send-btn">
-              <IconSend />
+              <Send size={20} color="#ffffff" strokeWidth={2} />
             </button>
           </div>
         </div>
@@ -286,7 +236,7 @@ function App() {
           <div className="diagram-panel">
             <div className="panel-header">
               <div className="icon">
-                <IconSchema />
+                <LayoutGrid size={18} color="#ff6b2c" strokeWidth={2} />
               </div>
               <span>Schema Diagram</span>
             </div>
@@ -299,7 +249,7 @@ function App() {
                 />
               ) : (
                 <div className="diagram-placeholder">
-                  <IconSchema />
+                  <LayoutGrid size={64} color="#6a6a7a" strokeWidth={1} />
                   <p>Your schema diagram will appear here</p>
                 </div>
               )}
