@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from dotenv import load_dotenv
 from groq import Groq
 from tools import TOOLS
@@ -11,6 +12,7 @@ from handlers import (
     get_current_schema,
     reset_schema
 )
+from diagram import schema_to_mermaid, print_diagram
 
 load_dotenv()
 
@@ -26,18 +28,18 @@ SYSTEM_PROMPT = """You are SchemaForge, an expert database architect assistant. 
 5. Finalize when the user is satisfied (use finalize_schema tool)
 
 ## Guidelines:
-- Always ask at least 1-2 clarifying questions before proposing a schema
+- Ask 1-2 clarifying questions before proposing a schema
 - Consider: cardinality (one-to-one, one-to-many, many-to-many), nullable fields, unique constraints
 - Use standard SQL data types: INT, VARCHAR(n), TEXT, DATE, DATETIME, BOOLEAN, DECIMAL(p,s)
 - Every entity should have a primary key (usually entity_id as INT)
 - Name entities in PascalCase (e.g., UserAccount, OrderItem)
 - Name attributes in snake_case (e.g., created_at, first_name)
 
-## Important:
-- Do NOT output raw JSON to the user
-- Always use the tools to create/modify schemas
-- Be conversational and helpful
-- When you propose or modify a schema, briefly explain what you created and why
+## IMPORTANT - Tool Usage Rules:
+- Always use the provided tools to interact
+- Do NOT write function calls as text
+- Simply call the tools directly through the function calling mechanism
+- Never output raw JSON or function syntax in your text responses
 """
 
 # Conversation history
@@ -60,6 +62,7 @@ def process_tool_call(tool_name: str, tool_args: dict) -> str:
     
     return json.dumps(result)
 
+
 def chat(user_input: str) -> str:
     """Process user input and return agent response"""
     global messages
@@ -67,19 +70,35 @@ def chat(user_input: str) -> str:
     # Add user message to history
     messages.append({"role": "user", "content": user_input})
     
-    # Call the LLM
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "system", "content": SYSTEM_PROMPT}] + messages,
-        tools=TOOLS,
-        tool_choice="auto"
-    )
+    try:
+        # Call the LLM
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "system", "content": SYSTEM_PROMPT}] + messages,
+            tools=TOOLS,
+            tool_choice="auto"
+        )
+    except Exception as e:
+        error_str = str(e)
+        
+        # Check if it's a failed tool call with useful content
+        if "failed_generation" in error_str:
+            # Try to find a question in the error
+            question_match = re.search(r'"question":\s*"([^"]+)"', error_str)
+            if question_match:
+                question = question_match.group(1)
+                messages.append({"role": "assistant", "content": question})
+                return question
+        
+        # Generic error fallback
+        messages.pop()  # Remove the user message we added
+        return f"Sorry, I encountered an error. Please try rephrasing. Error: {str(e)[:100]}"
     
     assistant_message = response.choices[0].message
     
     # Check if LLM wants to use a tool
     if assistant_message.tool_calls:
-        tool_call = assistant_message.tool_calls[0]  # Handle first tool call
+        tool_call = assistant_message.tool_calls[0]
         tool_name = tool_call.function.name
         tool_args = json.loads(tool_call.function.arguments)
         
@@ -90,7 +109,6 @@ def chat(user_input: str) -> str:
         
         # Handle each tool type directly
         if tool_name == "ask_clarification":
-            # Just return the question to the user
             question = result_dict.get("question", "Could you provide more details?")
             options = result_dict.get("options", [])
             
@@ -102,7 +120,6 @@ def chat(user_input: str) -> str:
             return response_text
         
         elif tool_name == "propose_schema":
-            # Show what was created
             if result_dict.get("success"):
                 schema = result_dict.get("schema", {})
                 entities = schema.get("entities", [])
@@ -138,6 +155,7 @@ def chat(user_input: str) -> str:
         elif tool_name == "finalize_schema":
             if result_dict.get("success"):
                 response_text = f"✅ Schema finalized!\n\n{result_dict.get('message', '')}"
+                print_diagram()
             else:
                 response_text = f"❌ Error: {result_dict.get('error', 'Unknown error')}"
             
@@ -148,6 +166,7 @@ def chat(user_input: str) -> str:
     content = assistant_message.content or "How can I help you design your database?"
     messages.append({"role": "assistant", "content": content})
     return content
+
 
 def reset_conversation():
     """Start a fresh conversation"""
@@ -161,6 +180,7 @@ if __name__ == "__main__":
     print("=" * 50)
     print("SchemaForge - Database Schema Designer")
     print("Type 'quit' to exit, 'reset' to start over")
+    print("Type 'diagram' to show current schema diagram")
     print("=" * 50)
     print()
     
@@ -173,6 +193,9 @@ if __name__ == "__main__":
         elif user_input.lower() == 'reset':
             reset_conversation()
             print("Conversation reset. Start fresh!")
+            continue
+        elif user_input.lower() == 'diagram':
+            print_diagram()
             continue
         elif not user_input:
             continue
